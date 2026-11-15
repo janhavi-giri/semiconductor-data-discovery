@@ -28,7 +28,7 @@ docker compose up --build
 
 The Docker path is supplied but was not executed during preparation. The Python server and HTTP APIs were tested.
 
-## What to show
+## What the demo would show
 
 | Demo moment | What the audience sees | Why it matters |
 |---|---|---|
@@ -38,8 +38,6 @@ The Docker path is supplied but was not executed during preparation. The Python 
 | Check limits | Real SECOM returns no chamber-specific match | Missing identities remain unknown |
 | Export handoff | Paths, checksums, roles, join keys and limitations | Applications receive an explicit data contract |
 | Consume selection | Verify checksums and load selected files | Discovery connects to an actual downstream operation |
-
-Detailed presenter notes: [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md).
 
 ## Two honest data populations
 
