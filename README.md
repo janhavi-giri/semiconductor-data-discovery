@@ -8,6 +8,10 @@ Ask: **“Find etch sensor traces for failed wafers in chamber C2.”** Compare 
 
 Repository publishing instructions: [docs/PUBLISH.md](docs/PUBLISH.md). The clone URL below is the intended remote name; if using the supplied ZIP, extract it and start from `python server.py`.
 
+## Demo video
+
+The 40-second Fab Context walkthrough [Fab_Context_Demo.mp4) shows how to find etch traces for wafers processed in chamber C2 that later failed test. On the same synthetic files, filename search returns zero matches, while a search using manufacturing metadata finds five traces and shows how a trace links to its test result. A second example uses public SECOM data to show how the tool flags missing chamber IDs.
+
 ## Start the visual demo
 
 Python 3.10+ is enough to run the included visual demo. **No install, API key or network connection is required after cloning.**
