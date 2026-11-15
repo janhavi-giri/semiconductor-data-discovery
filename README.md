@@ -10,7 +10,7 @@ Repository publishing instructions: [docs/PUBLISH.md](docs/PUBLISH.md). The clon
 
 ## Demo video
 
-The 40-second Fab Context walkthrough [Fab_Context_Demo.mp4) shows how to find etch traces for wafers processed in chamber C2 that later failed test. On the same synthetic files, filename search returns zero matches, while a search using manufacturing metadata finds five traces and shows how a trace links to its test result. A second example uses public SECOM data to show how the tool flags missing chamber IDs.
+The 40-second Fab Context walkthrough [Fab_Context_Demo.mp4](Fab_Context_Demo.mp4) shows how to find etch traces for wafers processed in chamber C2 that later failed test. On the same synthetic files, filename search returns zero matches, while a search using manufacturing metadata finds five traces and shows how a trace links to its test result. A second example uses public SECOM data to show how the tool flags missing chamber IDs.
 
 ## Start the visual demo
 
