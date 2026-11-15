@@ -12,6 +12,7 @@ Repository publishing instructions: [docs/PUBLISH.md](docs/PUBLISH.md). The clon
 
 The 40-second Fab Context walkthrough [Fab_Context_Demo.mp4](Fab_Context_Demo.mp4) shows how to find etch traces for wafers processed in chamber C2 that later failed test. On the same synthetic files, filename search returns zero matches, while a search using manufacturing metadata finds five traces and shows how a trace links to its test result. A second example uses public SECOM data to show how the tool flags missing chamber IDs.
 
+![Fab Context demo comparing filename search with manufacturing metadata search](Fab_Context_Demo.gif)
 ## Start the visual demo
 
 Python 3.10+ is enough to run the included visual demo. **No install, API key or network connection is required after cloning.**
