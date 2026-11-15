@@ -6,8 +6,6 @@ Ask: **“Find etch sensor traces for failed wafers in chamber C2.”** Compare 
 
 > Uses public SECOM data and a labeled synthetic fab scenario.
 
-Repository publishing instructions: [docs/PUBLISH.md](docs/PUBLISH.md). The clone URL below is the intended remote name; if using the supplied ZIP, extract it and start from `python server.py`.
-
 ## Demo video
 
 The 40-second Fab Context walkthrough [Fab_Context_Demo.mp4](Fab_Context_Demo.mp4) shows how to find etch traces for wafers processed in chamber C2 that later failed test. On the same synthetic files, filename search returns zero matches, while a search using manufacturing metadata finds five traces and shows how a trace links to its test result. A second example uses public SECOM data to show how the tool flags missing chamber IDs.
@@ -130,6 +128,15 @@ See [Fab_Context_Architecture.md](docs/Fab_Context_Architecture.md) for the data
 Start with a small trace + metrology/test cohort. Agree on authoritative identities and joins across MES, FDC and quality systems. Attach unit, recipe revision, grain, lineage, access policy and freshness. Use the same query set and retrieval engine before/after enrichment to measure discovery success, correct cohort construction, unsupported-question handling and engineer time-to-data. Any ROI or manufacturing outcome needs that customer-specific measurement.
 
 This demo is local and unauthenticated; keep the server bound to loopback. It implements no enterprise authorization, live MES/FDC connector, storage-vendor integration, file watcher, governed catalog publication or causal diagnosis.
+
+## Citation
+@misc{giri2026fabcontext,
+  author       = {Giri, Janhavi},
+  title        = {{Fab Context}: Semiconductor Data Discovery},
+  year         = {2026},
+  howpublished = {GitHub repository},
+  url          = {https://github.com/janhavi-giri/semiconductor-data-discovery}
+}
 
 ## Attribution
 
