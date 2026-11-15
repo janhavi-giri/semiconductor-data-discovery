@@ -130,13 +130,7 @@ Start with a small trace + metrology/test cohort. Agree on authoritative identit
 This demo is local and unauthenticated; keep the server bound to loopback. It implements no enterprise authorization, live MES/FDC connector, storage-vendor integration, file watcher, governed catalog publication or causal diagnosis.
 
 ## Citation
-@misc{giri2026fabcontext,
-  author       = {Giri, Janhavi},
-  title        = {{Fab Context}: Semiconductor Data Discovery},
-  year         = {2026},
-  howpublished = {GitHub repository},
-  url          = {https://github.com/janhavi-giri/semiconductor-data-discovery}
-}
+Giri, J. (2026). Fab Context: Semiconductor data discovery [Computer software]. GitHub. https://github.com/janhavi-giri/semiconductor-data-discovery
 
 ## Attribution
 
