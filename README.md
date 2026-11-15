@@ -107,6 +107,13 @@ For the existing assets, tests need only Python's standard library. GitHub Actio
 
 See [Fab_Context_Architecture.md](docs/Fab_Context_Architecture.md) for the data flow diagram, datasets, Python search logic, API outputs, and how downstream tools verify and load the selected files.
 
+### Data Dependencies 
+
+The diagram shows how manufacturing execution, equipment, and downstream test records connect to identify etch traces from chamber C2 for wafers that later failed test.
+[Data Dependencies](data-dependencies.png)
+
+In the synthetic demo, these relationships are already recorded in the metadata catalog. The graph shows how a fab could establish them from source records.
+
 ## Repository map
 
 | Path | Purpose |
