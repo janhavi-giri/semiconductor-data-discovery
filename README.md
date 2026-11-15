@@ -11,6 +11,13 @@ Ask: **“Find etch sensor traces for failed wafers in chamber C2.”** Compare 
 The 40-second Fab Context walkthrough [Fab_Context_Demo.mp4](Fab_Context_Demo.mp4) shows how to find etch traces for wafers processed in chamber C2 that later failed test. On the same synthetic files, filename search returns zero matches, while a search using manufacturing metadata finds five traces and shows how a trace links to its test result. A second example uses public SECOM data to show how the tool flags missing chamber IDs.
 
 ![Fab Context demo comparing filename search with manufacturing metadata search](Fab_Context_Demo.gif)
+
+### Data dependencies for the etch investigation
+
+![Data flow linking manufacturing execution, equipment traces, and downstream test records for the chamber C2 etch investigation](docs/images/etch-data-dependencies.png)
+
+*In the synthetic demo, the metadata catalog already records these relationships. The diagram shows how a fab could establish them from source records.*
+
 ## Start the visual demo
 
 Python 3.10+ is enough to run the included visual demo. **No install, API key or network connection is required after cloning.**
@@ -106,13 +113,6 @@ For the existing assets, tests need only Python's standard library. GitHub Actio
 # Architecture
 
 See [Fab_Context_Architecture.md](docs/Fab_Context_Architecture.md) for the data flow diagram, datasets, Python search logic, API outputs, and how downstream tools verify and load the selected files.
-
-### Data Dependencies 
-
-The diagram shows how manufacturing execution, equipment, and downstream test records connect to identify etch traces from chamber C2 for wafers that later failed test.
-[Data Dependencies](data-dependencies.png)
-
-In the synthetic demo, these relationships are already recorded in the metadata catalog. The graph shows how a fab could establish them from source records.
 
 ## Repository map
 
