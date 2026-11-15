@@ -1,0 +1,8 @@
+services:
+  discovery-demo:
+    build: .
+    ports:
+      - "127.0.0.1:8501:8501"
+    read_only: true
+    tmpfs:
+      - /tmp

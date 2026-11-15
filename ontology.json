@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "terms": {
+    "process_measurement": {"description": "Sensor readings collected during a manufacturing process", "synonyms": ["sensor", "signals", "trace", "traces", "measurements", "fdc"]},
+    "quality_outcome": {"description": "Observed test result; a target, not a predictor", "synonyms": ["test", "quality", "failure", "failed", "fail", "pass", "outcome", "labels", "label"]},
+    "etch": {"description": "Etch process step; available only in the synthetic scenario", "synonyms": ["etch", "etching"]},
+    "deposition": {"description": "Deposition process step; available only in the synthetic scenario", "synonyms": ["deposition", "deposit", "cvd"]},
+    "temporal_validation": {"description": "Ordering observations for a time-based train/test split", "synonyms": ["chronology", "chronological", "temporal", "timestamp", "timestamps"]}
+  },
+  "relationships": [
+    {"source": "trace", "relation": "observed_on", "target": "wafer", "evidence": "synthetic_manifest.wafer_id"},
+    {"source": "wafer", "relation": "member_of", "target": "lot", "evidence": "synthetic_manifest.lot_id"},
+    {"source": "trace", "relation": "produced_by", "target": "chamber", "evidence": "synthetic_manifest.chamber_id"},
+    {"source": "trace", "relation": "uses", "target": "recipe_revision", "evidence": "synthetic_manifest.recipe_revision"},
+    {"source": "trace", "relation": "has_outcome", "target": "quality_test", "evidence": "wafer_id match; exactly one synthetic test per wafer"},
+    {"source": "secom_measurement", "relation": "has_outcome", "target": "secom_test", "evidence": "generated sample_id aligned by original source row"}
+  ]
+}
