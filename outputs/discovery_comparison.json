@@ -1,0 +1,126 @@
+{
+  "method": "Three hand-authored smoke questions, lexical ranking with curated synonyms. Not a general retrieval benchmark.",
+  "cases": [
+    {
+      "question": "Find sensor signals for failure prediction",
+      "expected": "process_features",
+      "raw_top1": null,
+      "context_top1": "process_features",
+      "evidence": [
+        {
+          "asset_id": "process_features",
+          "physical_table": "process_features",
+          "context": "Semiconductor manufacturing process measurements sensor signals features for quality classification failure prediction anomaly detection",
+          "grain": "one anonymized sample per row",
+          "role": "features",
+          "join_key": "sample_id",
+          "label_available": 1,
+          "limitations": "sensor identities units tool chamber wafer lot recipe unavailable",
+          "matched_terms": [
+            "failure",
+            "for",
+            "prediction",
+            "sensor",
+            "signals"
+          ],
+          "score": 5
+        },
+        {
+          "asset_id": "test_outcomes",
+          "physical_table": "test_outcomes",
+          "context": "Semiconductor manufacturing quality test pass fail outcome target label failure classification",
+          "grain": "one anonymized sample per row",
+          "role": "target",
+          "join_key": "sample_id",
+          "label_available": 1,
+          "limitations": "test result is an outcome; exclude from prediction features",
+          "matched_terms": [
+            "failure"
+          ],
+          "score": 1
+        }
+      ]
+    },
+    {
+      "question": "Find quality outcome labels",
+      "expected": "test_outcomes",
+      "raw_top1": null,
+      "context_top1": "test_outcomes",
+      "evidence": [
+        {
+          "asset_id": "test_outcomes",
+          "physical_table": "test_outcomes",
+          "context": "Semiconductor manufacturing quality test pass fail outcome target label failure classification",
+          "grain": "one anonymized sample per row",
+          "role": "target",
+          "join_key": "sample_id",
+          "label_available": 1,
+          "limitations": "test result is an outcome; exclude from prediction features",
+          "matched_terms": [
+            "outcome",
+            "quality"
+          ],
+          "score": 2
+        },
+        {
+          "asset_id": "process_features",
+          "physical_table": "process_features",
+          "context": "Semiconductor manufacturing process measurements sensor signals features for quality classification failure prediction anomaly detection",
+          "grain": "one anonymized sample per row",
+          "role": "features",
+          "join_key": "sample_id",
+          "label_available": 1,
+          "limitations": "sensor identities units tool chamber wafer lot recipe unavailable",
+          "matched_terms": [
+            "quality"
+          ],
+          "score": 1
+        }
+      ]
+    },
+    {
+      "question": "Find chronology for temporal validation",
+      "expected": "samples",
+      "raw_top1": null,
+      "context_top1": "samples",
+      "evidence": [
+        {
+          "asset_id": "samples",
+          "physical_table": "samples",
+          "context": "Semiconductor sample observation timestamps chronology temporal validation split provenance",
+          "grain": "one anonymized sample per row",
+          "role": "index",
+          "join_key": "sample_id",
+          "label_available": 1,
+          "limitations": "sample_id generated from original row order; not a real wafer identifier",
+          "matched_terms": [
+            "chronology",
+            "temporal",
+            "validation"
+          ],
+          "score": 3
+        },
+        {
+          "asset_id": "process_features",
+          "physical_table": "process_features",
+          "context": "Semiconductor manufacturing process measurements sensor signals features for quality classification failure prediction anomaly detection",
+          "grain": "one anonymized sample per row",
+          "role": "features",
+          "join_key": "sample_id",
+          "label_available": 1,
+          "limitations": "sensor identities units tool chamber wafer lot recipe unavailable",
+          "matched_terms": [
+            "for"
+          ],
+          "score": 1
+        }
+      ]
+    }
+  ],
+  "raw_top1_hits": 0,
+  "context_top1_hits": 3,
+  "unsupported_question": {
+    "question": "Which etch chamber caused failure?",
+    "answer": "Not answerable: tool, chamber and process-step identities are unavailable; no causal claim supported."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "data_integrity": "passed",
+  "label_mapping": "passed",
+  "join_cardinality": "passed",
+  "target_exclusion": "passed"
+}

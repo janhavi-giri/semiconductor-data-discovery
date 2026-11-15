@@ -1,0 +1,50 @@
+{
+  "contract_version": "1.0",
+  "query": "Find etch sensor traces for failed wafers in chamber C2",
+  "filters": {
+    "process_step": "etch",
+    "chamber_id": "C2",
+    "test_outcome": "fail",
+    "role": "features"
+  },
+  "retrieval_method": "deterministic keyword and ontology-synonym ranking",
+  "assets": [
+    {
+      "asset_id": "TRACE-DEMO-W001",
+      "relative_uri": "data/synthetic/a0001.csv",
+      "sha256": "16a113174bd5d0b9850c20dec5321fce2024a98ab9ea2c10bca493445ff7ac54",
+      "source": "Synthetic fab scenario",
+      "synthetic": true,
+      "role": "features",
+      "grain": "one second per row; file is one wafer process run",
+      "join_key": "wafer_id",
+      "units": "elapsed_seconds=s; pressure_pa=Pa; temperature_c=degC",
+      "related_assets": [
+        {
+          "asset_id": "TEST-DEMO-W001",
+          "path": "data/synthetic/a0002.csv",
+          "role": "target",
+          "relationship": "same synthetic wafer_id"
+        }
+      ],
+      "limitations": [
+        "All IDs, outcomes and signals are synthetic",
+        "Chamber association is not evidence of causality"
+      ],
+      "provenance": {
+        "kind": "synthetic",
+        "generator": "build_demo.py; seed=42",
+        "license": "MIT",
+        "purpose": "Illustrative manufacturing context generated for the demo"
+      }
+    }
+  ],
+  "consumer_rules": [
+    "Resolve relative_uri against repository root; verify SHA-256 before reading",
+    "Join only on documented keys and check cardinality",
+    "Never mix synthetic and real observations into a training population",
+    "Exclude test outcomes, IDs and context-only fields from predictors",
+    "Fit all preprocessing on training data; evaluate on held-out data"
+  ],
+  "warnings": []
+}

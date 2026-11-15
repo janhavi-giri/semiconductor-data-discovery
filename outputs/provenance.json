@@ -1,0 +1,22 @@
+{
+  "source": "https://archive.ics.uci.edu/static/public/179/secom.zip",
+  "citation": "McCann, M. & Johnston, A. (2008). SECOM. UCI. doi:10.24432/C54305",
+  "license": "CC BY 4.0",
+  "archive_sha256": "eea568baf3c2229096d7d294cf0b096b5502bd96d92c0b80a65b84714059be8e",
+  "samples": 1567,
+  "measurement_columns_observed": 590,
+  "fail_count": 104,
+  "missing_values": 41951,
+  "identity": "generated sample_id from row order; labels aligned by source row",
+  "unknown": [
+    "physical sensor names",
+    "units",
+    "tool",
+    "chamber",
+    "wafer_id",
+    "lot",
+    "recipe",
+    "process step"
+  ],
+  "note": "UCI prose reports 591 features; actual source matrix parsed here has 590. No feature invented."
+}
