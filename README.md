@@ -100,6 +100,9 @@ python -m unittest discover -s tests -v
 ```
 
 For the existing assets, tests need only Python's standard library. GitHub Actions runs them on push/PR. They check provenance separation, explicit filters, unknown context, linked test cardinality, handoff consumption and invalid selections/paths. [docs/VALIDATION.md](docs/VALIDATION.md) records what was actually exercised.
+# Architecture
+
+See [Fab_Context_Architecture.md](docs/Fab_Context_Architecture.md) for the data flow diagram, datasets, Python search logic, API outputs, and how downstream tools verify and load the selected files.
 
 ## Repository map
 
