@@ -1,0 +1,15 @@
+{
+  "purpose": "Baseline trained from a verified discovery handoff contract; no production or causal claim",
+  "input_provenance": "discovery handoff: SECOM-process_features sha256=3248e47f28a8, SECOM-samples sha256=6f2c99b48f11, SECOM-test_outcomes sha256=6150ce05619d",
+  "split": "80% approximate chronological cut, timestamp groups kept together",
+  "train_rows": 1253,
+  "test_rows": 314,
+  "train_failures": 87,
+  "test_failures": 17,
+  "feature_count": 444,
+  "average_precision": 0.16971250228861665,
+  "roc_auc": 0.7579718756189344,
+  "balanced_accuracy_at_0_5": 0.5663497722321251,
+  "test_failure_prevalence": 0.054140127388535034,
+  "limitations": "small imbalanced historical dataset; temporal proxy only; unknown measurement availability at decision time"
+}
