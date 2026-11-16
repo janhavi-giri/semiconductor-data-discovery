@@ -37,4 +37,25 @@ class DiscoveryTests(unittest.TestCase):
     def test_causality_warning(self):self.assertTrue(search('root cause of failed wafers')['warnings'])
     def test_no_fake_nand_data(self):self.assertTrue(search('NAND failures')['warnings'])
     def test_no_raw_name_match(self):self.assertTrue(search('a0001')['raw_results'])
+    def test_ablations_separate_metadata_from_filenames(self):
+        r=search('Find etch sensor traces for failed wafers in chamber C2')
+        a=r['ablations']
+        self.assertEqual(a['filename_only'],0)
+        self.assertEqual(a['filename_plus_same_metadata_filters'],0)
+        self.assertGreater(a['metadata_filters_only_no_text'],0)
+        self.assertEqual(a['metadata_ranked'],len(r['results']))
+    def test_bootstrap_extracts_data_zip(self):
+        import tempfile,zipfile,shutil,bootstrap
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);shutil.copy(bootstrap.ARCHIVE,root/'data.zip')
+            old=(bootstrap.ROOT,bootstrap.ARCHIVE,bootstrap.MARKER)
+            try:
+                bootstrap.ROOT,bootstrap.ARCHIVE,bootstrap.MARKER=root.resolve(),root/'data.zip',root/'data'/'catalog.json'
+                self.assertTrue(bootstrap.ensure_data());self.assertTrue((root/'data'/'catalog.json').exists())
+            finally:bootstrap.ROOT,bootstrap.ARCHIVE,bootstrap.MARKER=old
+    def test_secom_contract_has_required_roles(self):
+        c=json.loads((Path(__file__).resolve().parents[1]/'examples'/'secom-ml-handoff.json').read_text())
+        self.assertEqual({a['role'] for a in c['assets']},{'features','target','index'})
+        self.assertTrue(all(not a['synthetic'] for a in c['assets']))
+        consume(c)
 if __name__=='__main__':unittest.main()
