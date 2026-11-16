@@ -1,0 +1,144 @@
+{
+  "contract_version": "1.0",
+  "query": "",
+  "filters": {
+    "source": "SECOM (real)"
+  },
+  "retrieval_method": "deterministic keyword and ontology-synonym ranking",
+  "assets": [
+    {
+      "asset_id": "SECOM-process_features",
+      "relative_uri": "data/real/r0001.csv",
+      "sha256": "3248e47f28a862390afe1dc6d3d2a980f70e4d59b8587cdc36cf8166a91f3cdc",
+      "source": "SECOM (real)",
+      "synthetic": false,
+      "role": "features",
+      "grain": "one anonymized sample per row",
+      "join_key": "sample_id",
+      "units": "unknown",
+      "related_assets": [
+        {
+          "asset_id": "SECOM-test_outcomes",
+          "path": "data/real/r0002.csv",
+          "role": "target",
+          "relationship": "same SECOM source; see join_key"
+        },
+        {
+          "asset_id": "SECOM-samples",
+          "path": "data/real/r0003.csv",
+          "role": "index",
+          "relationship": "same SECOM source; see join_key"
+        },
+        {
+          "asset_id": "SECOM-feature_metadata",
+          "path": "data/real/r0004.csv",
+          "role": "profile",
+          "relationship": "same SECOM source; see join_key"
+        }
+      ],
+      "limitations": [
+        "Physical sensor identity and units unavailable",
+        "Wafer, lot, tool, chamber, recipe and process-step IDs unavailable",
+        "Failure fraction refers to sample-level test outcomes"
+      ],
+      "provenance": {
+        "kind": "real_public_data",
+        "source": "https://doi.org/10.24432/C54305",
+        "license": "CC BY 4.0",
+        "transformation": "CSV export from normalized SECOM source; row-order aligned sample IDs"
+      }
+    },
+    {
+      "asset_id": "SECOM-samples",
+      "relative_uri": "data/real/r0003.csv",
+      "sha256": "6f2c99b48f11192396269fb2e5332c36844a59b4211db419461d0ceb8c77f3ca",
+      "source": "SECOM (real)",
+      "synthetic": false,
+      "role": "index",
+      "grain": "one anonymized sample per row",
+      "join_key": "sample_id",
+      "units": "unknown",
+      "related_assets": [
+        {
+          "asset_id": "SECOM-process_features",
+          "path": "data/real/r0001.csv",
+          "role": "features",
+          "relationship": "same SECOM source; see join_key"
+        },
+        {
+          "asset_id": "SECOM-test_outcomes",
+          "path": "data/real/r0002.csv",
+          "role": "target",
+          "relationship": "same SECOM source; see join_key"
+        },
+        {
+          "asset_id": "SECOM-feature_metadata",
+          "path": "data/real/r0004.csv",
+          "role": "profile",
+          "relationship": "same SECOM source; see join_key"
+        }
+      ],
+      "limitations": [
+        "Physical sensor identity and units unavailable",
+        "Wafer, lot, tool, chamber, recipe and process-step IDs unavailable",
+        "Failure fraction refers to sample-level test outcomes"
+      ],
+      "provenance": {
+        "kind": "real_public_data",
+        "source": "https://doi.org/10.24432/C54305",
+        "license": "CC BY 4.0",
+        "transformation": "CSV export from normalized SECOM source; row-order aligned sample IDs"
+      }
+    },
+    {
+      "asset_id": "SECOM-test_outcomes",
+      "relative_uri": "data/real/r0002.csv",
+      "sha256": "6150ce05619dc27f3db16413ebb18e22065b7d76bfbb1a8ccb7bdd8b44cdcfe2",
+      "source": "SECOM (real)",
+      "synthetic": false,
+      "role": "target",
+      "grain": "one anonymized sample per row",
+      "join_key": "sample_id",
+      "units": "unknown",
+      "related_assets": [
+        {
+          "asset_id": "SECOM-process_features",
+          "path": "data/real/r0001.csv",
+          "role": "features",
+          "relationship": "same SECOM source; see join_key"
+        },
+        {
+          "asset_id": "SECOM-samples",
+          "path": "data/real/r0003.csv",
+          "role": "index",
+          "relationship": "same SECOM source; see join_key"
+        },
+        {
+          "asset_id": "SECOM-feature_metadata",
+          "path": "data/real/r0004.csv",
+          "role": "profile",
+          "relationship": "same SECOM source; see join_key"
+        }
+      ],
+      "limitations": [
+        "Physical sensor identity and units unavailable",
+        "Wafer, lot, tool, chamber, recipe and process-step IDs unavailable",
+        "Failure fraction refers to sample-level test outcomes"
+      ],
+      "provenance": {
+        "kind": "real_public_data",
+        "source": "https://doi.org/10.24432/C54305",
+        "license": "CC BY 4.0",
+        "transformation": "CSV export from normalized SECOM source; row-order aligned sample IDs"
+      }
+    }
+  ],
+  "consumer_rules": [
+    "Resolve relative_uri against repository root; verify SHA-256 before reading",
+    "Join only on documented keys and check cardinality",
+    "Never mix synthetic and real observations into a training population",
+    "Exclude test outcomes, IDs and context-only fields from predictors",
+    "Fit all preprocessing on training data; evaluate on held-out data"
+  ],
+  "warnings": []
+}
