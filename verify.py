@@ -1,4 +1,6 @@
 import json, sqlite3
+from bootstrap import ensure_data
+ensure_data()
 from poc import DATA,OUT,discover
 with sqlite3.connect(DATA/'semiconductor.sqlite') as c:
     assert c.execute('SELECT * FROM quality_summary').fetchone()==(1567,104,104/1567)
