@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+# Unpacked from data.zip on first run (see bootstrap.py)
+data/
+discovery-handoff.json
