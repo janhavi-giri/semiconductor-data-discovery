@@ -1,13 +1,16 @@
 """Explainable metadata discovery. Keyword/synonym ranking, not LLM retrieval."""
 from pathlib import Path
 import csv, hashlib, json, re
+from bootstrap import ensure_data
 ROOT=Path(__file__).resolve().parent
 FILTERS=('source','process_step','chamber_id','test_outcome','role','lot_id')
 STOP={'find','for','the','and','with','from','data','me','which','show','a','of','in','to','can','i','that','are','on','is','an','all','it','what','by'}
 
 def tokens(text):return set(re.findall(r'[a-z0-9]+',str(text).lower()))-STOP
 
-def load():return json.loads((ROOT/'data/catalog.json').read_text(encoding="utf-8"))
+def load():
+    ensure_data()
+    return json.loads((ROOT/'data/catalog.json').read_text(encoding="utf-8"))
 
 def search(query='',filters=None):
     filters=filters or {}
@@ -27,14 +30,18 @@ def search(query='',filters=None):
     if q&{'failed','fail','failures'}:inferred['test_outcome']='fail'
     if q&{'trace','traces','signals','sensor'}:inferred['role']='features'
     effective={**inferred,**{k:v for k,v in filters.items() if v not in ('',None)}}
-    raw=[];enriched=[]
+    raw=[];enriched=[];filter_only=[];filename_filtered=[]
     for asset in load():
         name=Path(asset['path']).name
         lexical=sorted(q&tokens(name))
         # Baseline is filename-only, has no semantic filters.
         if lexical:raw.append({'asset_id':asset['asset_id'],'path':asset['path'],'score':len(lexical),'matched_terms':lexical})
-        if any(str(asset.get(k))!=str(v) for k,v in effective.items() if k in FILTERS):continue
-        if 'max_missing' in effective and (asset['missing_fraction'] is None or asset['missing_fraction']>float(effective['max_missing'])):continue
+        passes=not any(str(asset.get(k))!=str(v) for k,v in effective.items() if k in FILTERS)
+        if passes and 'max_missing' in effective and (asset['missing_fraction'] is None or asset['missing_fraction']>float(effective['max_missing'])):passes=False
+        if passes:
+            filter_only.append(asset['asset_id'])
+            if lexical:filename_filtered.append(asset['asset_id'])
+        if not passes:continue
         context=' '.join(str(asset.get(k) or '') for k in ('description','concept','role','process_step','chamber_id','recipe_revision','lot_id','wafer_id','test_outcome','units'))
         matched=sorted(expanded&tokens(context)); score=len(matched)
         if q and not score:continue
@@ -45,7 +52,7 @@ def search(query='',filters=None):
     if any(w in q for w in ('nand','dram')):warnings.append('The dataset and synthetic scenario lack verified NAND or DRAM product identifiers.')
     if filters.get('source')=='SECOM (real)' and (step or chamber or any(filters.get(k) for k in ('process_step','chamber_id','lot_id'))):warnings.append('SECOM does not provide process-step, chamber or lot identities. No real asset satisfies that context.')
     if not enriched:warnings.append('No assets satisfy this query and its known context. Relax filters or supply authoritative metadata; do not invent missing identities.')
-    return {'query':query,'method':'deterministic keyword and ontology-synonym ranking','inferred_filters':inferred,'effective_filters':effective,'raw_results':raw,'results':enriched,'warnings':warnings,'comparison_note':'Filename-only baseline has no metadata filters. This is a mechanism demonstration, not an independent retrieval benchmark.'}
+    return {'query':query,'method':'deterministic keyword and ontology-synonym ranking','inferred_filters':inferred,'effective_filters':effective,'raw_results':raw,'results':enriched,'warnings':warnings,'ablations':{'filename_only':len(raw),'filename_plus_same_metadata_filters':len(filename_filtered),'metadata_filters_only_no_text':len(filter_only),'metadata_ranked':len(enriched)},'comparison_note':'The filename-only baseline has no metadata filters, so it cannot be an unbiased benchmark. The ablations separate the effect of the metadata itself (filters applied to filenames, or filters alone) from keyword and synonym ranking. This is a mechanism demonstration, not an independent retrieval benchmark.'}
 
 def asset_detail(asset_id):
     all_assets=load()
