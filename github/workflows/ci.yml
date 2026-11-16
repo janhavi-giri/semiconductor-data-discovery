@@ -1,0 +1,38 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Unit tests (standard library only)
+        run: python -m unittest discover -s tests -v
+      - name: Install optional dependencies
+        run: pip install -r requirements.txt
+      - name: Data, label-mapping and leakage checks
+        run: python verify.py
+      - name: ML baseline from a discovery handoff
+        run: python poc.py train-from-handoff
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and smoke-test the container
+        run: |
+          docker compose up --build -d
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8501/api/health && exit 0
+            sleep 1
+          done
+          docker compose logs
+          exit 1
