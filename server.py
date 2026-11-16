@@ -3,6 +3,7 @@ from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs,urlparse
 import argparse,json
+from bootstrap import ensure_data
 from discovery import ROOT,load,search,asset_detail,handoff,FILTERS
 class Handler(BaseHTTPRequestHandler):
     def send(self,status,body,kind='application/json'):
@@ -26,5 +27,6 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:return self.send(500,{'error':'Local data unavailable. Run python build_demo.py and retry.'})
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--host',default='127.0.0.1');p.add_argument('--port',type=int,default=8501);a=p.parse_args()
+    if not ensure_data():raise SystemExit('Demo data missing. Restore data.zip or run python build_demo.py')
     print(f'Open http://127.0.0.1:{a.port} (Ctrl+C to stop)',flush=True)
     ThreadingHTTPServer((a.host,a.port),Handler).serve_forever()
