@@ -4,6 +4,7 @@ import argparse, hashlib, json, sqlite3, zipfile
 from datetime import datetime
 import urllib.request
 import pandas as pd
+from bootstrap import ensure_data
 
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / 'data'
@@ -71,18 +72,15 @@ def demo():
     (OUT/'discovery_comparison.json').write_text(json.dumps(report,indent=2))
     print(json.dumps(report,indent=2))
 
-def train():
+def _evaluate(f, s, purpose, provenance):
+    """Chronological holdout. `f` is indexed by sample_id; `s` has sample_id, observed_at, is_fail."""
     from sklearn.impute import SimpleImputer
     from sklearn.feature_selection import VarianceThreshold
     from sklearn.pipeline import make_pipeline
     from sklearn.preprocessing import StandardScaler
     from sklearn.linear_model import LogisticRegression
     from sklearn.metrics import average_precision_score, balanced_accuracy_score, roc_auc_score
-    # A consuming application resolves assets then executes an explicit, reviewed join.
-    assert discover('Find sensor signals for failure prediction')[0]['asset_id']=='process_features'
-    with sqlite3.connect(DATA/'semiconductor.sqlite') as c:
-        f=pd.read_sql_query('SELECT * FROM process_features',c).set_index('sample_id')
-        s=pd.read_sql_query('SELECT s.sample_id,s.observed_at,t.is_fail FROM samples s JOIN test_outcomes t USING(sample_id) ORDER BY observed_at,s.sample_id',c)
+    s=s.sort_values(['observed_at','sample_id']).reset_index(drop=True)
     # Keep identical timestamp groups together at the temporal boundary.
     boundary=s.observed_at.iloc[int(.8*len(s))]
     tr=s[s.observed_at<boundary]; te=s[s.observed_at>=boundary]
@@ -92,12 +90,51 @@ def train():
     model=make_pipeline(SimpleImputer(strategy='median'),VarianceThreshold(),StandardScaler(),LogisticRegression(class_weight='balanced',max_iter=2000,random_state=7))
     model.fit(a[keep],tr.is_fail)
     p=model.predict_proba(b[keep])[:,1]
-    r={'purpose':'Discovery-to-ML handoff baseline; no production or causal claim','split':'80% approximate chronological cut, timestamp groups kept together','train_rows':len(tr),'test_rows':len(te),'train_failures':int(tr.is_fail.sum()),'test_failures':int(te.is_fail.sum()),'feature_count':len(keep),'average_precision':average_precision_score(te.is_fail,p),'roc_auc':roc_auc_score(te.is_fail,p),'balanced_accuracy_at_0_5':balanced_accuracy_score(te.is_fail,p>=.5),'test_failure_prevalence':float(te.is_fail.mean()),'limitations':'small imbalanced historical dataset; temporal proxy only; unknown measurement availability at decision time'}
+    r={'purpose':purpose,'input_provenance':provenance,'split':'80% approximate chronological cut, timestamp groups kept together','train_rows':len(tr),'test_rows':len(te),'train_failures':int(tr.is_fail.sum()),'test_failures':int(te.is_fail.sum()),'feature_count':len(keep),'average_precision':average_precision_score(te.is_fail,p),'roc_auc':roc_auc_score(te.is_fail,p),'balanced_accuracy_at_0_5':balanced_accuracy_score(te.is_fail,p>=.5),'test_failure_prevalence':float(te.is_fail.mean()),'limitations':'small imbalanced historical dataset; temporal proxy only; unknown measurement availability at decision time'}
+    return r, list(keep)
+
+def train():
+    # A consuming application resolves assets then executes an explicit, reviewed join.
+    assert discover('Find sensor signals for failure prediction')[0]['asset_id']=='process_features'
+    with sqlite3.connect(DATA/'semiconductor.sqlite') as c:
+        f=pd.read_sql_query('SELECT * FROM process_features',c).set_index('sample_id')
+        s=pd.read_sql_query('SELECT s.sample_id,s.observed_at,t.is_fail FROM samples s JOIN test_outcomes t USING(sample_id) ORDER BY observed_at,s.sample_id',c)
+    r,keep=_evaluate(f,s,'Discovery-to-ML handoff baseline; no production or causal claim','local SQLite catalog (data/semiconductor.sqlite)')
     (OUT/'ml_result.json').write_text(json.dumps(r,indent=2))
-    (OUT/'ml_handoff.json').write_text(json.dumps({'feature_asset':'process_features','label_asset':'test_outcomes','index_asset':'samples','join':'sample_id','target':'is_fail','exclude':['sample_id','observed_at','test_label','is_fail'],'features':list(keep),'provenance':'provenance.json'},indent=2))
+    (OUT/'ml_handoff.json').write_text(json.dumps({'feature_asset':'process_features','label_asset':'test_outcomes','index_asset':'samples','join':'sample_id','target':'is_fail','exclude':['sample_id','observed_at','test_label','is_fail'],'features':keep,'provenance':'provenance.json'},indent=2))
     print(json.dumps(r,indent=2))
 
+def secom_contract():
+    """Discovery handoff selecting the three real SECOM assets needed for the baseline."""
+    from discovery import handoff
+    return handoff('',{'source':'SECOM (real)'},['SECOM-process_features','SECOM-test_outcomes','SECOM-samples'])
+
+def train_from_contract(contract=None):
+    """Train from a discovery handoff contract instead of the original SQLite catalog.
+
+    Checksums are verified and path escapes rejected by consume_handoff.consume();
+    mixed real/synthetic cohorts are refused. Files are then resolved by role.
+    """
+    from consume_handoff import consume
+    contract=contract or secom_contract()
+    consume(contract)
+    by_role={a['role']:a for a in contract['assets']}
+    missing={'features','target','index'}-set(by_role)
+    if missing:raise ValueError('Contract lacks required roles: '+', '.join(sorted(missing)))
+    load=lambda role:pd.read_csv(ROOT/by_role[role]['relative_uri'])
+    features,target,index=load('features'),load('target'),load('index')
+    s=index[['sample_id','observed_at']].merge(target[['sample_id','is_fail']],on='sample_id',validate='one_to_one')
+    f=features.set_index('sample_id')
+    # Outcomes and identifiers are not predictors: only sensor channels enter the model.
+    f=f[[c for c in f.columns if c.startswith('sensor_')]]
+    r,keep=_evaluate(f,s,'Baseline trained from a verified discovery handoff contract; no production or causal claim','discovery handoff: '+', '.join(a['asset_id']+' sha256='+a['sha256'][:12] for a in contract['assets']))
+    (OUT/'ml_result_from_handoff.json').write_text(json.dumps(r,indent=2))
+    print(json.dumps(r,indent=2))
+    return r
+
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(); parser.add_argument('action',choices=['build','demo','train','search']); parser.add_argument('question',nargs='?',default='Find sensor signals for failure prediction'); args=parser.parse_args()
+    parser=argparse.ArgumentParser(); parser.add_argument('action',choices=['build','demo','train','train-from-handoff','search']); parser.add_argument('question',nargs='?',default='Find sensor signals for failure prediction'); args=parser.parse_args()
+    if args.action!='build': ensure_data()
     if args.action=='search': print(json.dumps(discover(args.question),indent=2))
+    elif args.action=='train-from-handoff': train_from_contract()
     else: globals()[args.action]()
