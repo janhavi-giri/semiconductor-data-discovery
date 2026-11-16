@@ -30,13 +30,15 @@ python server.py
 
 Open **http://127.0.0.1:8501**. Windows users may use `py server.py`.
 
+A fresh clone ships the demo payloads as `data.zip`. On first start, `server.py` unpacks it into `data/` (see `bootstrap.py`); no manual unzip is needed. `data/` is git-ignored because it is derived from the archive.
+
 Alternative, with Docker:
 
 ```bash
 docker compose up --build
 ```
 
-The Docker path is supplied but was not executed during preparation. The Python server and HTTP APIs were tested.
+The image unpacks `data.zip` at build time because the compose service runs read-only. The Docker path has not been run by the author locally; the CI workflow builds the image and checks `/api/health` on every push, so its status is visible in the Actions tab. The Python server and HTTP APIs were tested.
 
 ## What the demo would show
 
@@ -69,7 +71,7 @@ The UCI prose reports 591 features; the actual source measurement matrix contain
 5. **Handoff:** export selected file pointers, SHA-256 checksums, relationships and consumer rules.
 6. **Consume:** verify the contract and load only selected data.
 
-The visual demo uses **deterministic keyword and curated ontology-synonym matching**, with explicit extraction of a small set of known filters. The filename baseline does not have metadata filters; comparisons illustrate the mechanism, not an unbiased retrieval benchmark. Known supported questions are in the walkthrough; arbitrary natural-language understanding is not claimed.
+The visual demo uses **deterministic keyword and curated ontology-synonym matching**, with explicit extraction of a small set of known filters. The filename baseline does not have metadata filters, so comparisons illustrate the mechanism, not an unbiased retrieval benchmark. To show where the gain comes from, each search response includes `ablations`: filename-only, filename plus the same metadata filters, metadata filters alone, and full metadata ranking. In the C2 etch example, filenames such as `a0001.csv` carry no meaning, so adding filters to filename search still returns nothing; the value comes from the metadata fields themselves, not from the ranking. Known supported questions are in the walkthrough; arbitrary natural-language understanding is not claimed.
 
 ## Downstream application example
 
@@ -94,7 +96,15 @@ pip install -r requirements.txt
 python poc.py train
 ```
 
-This baseline resolves its feature asset through the original local catalog, joins normalized samples and labels, excludes outcomes and IDs from inputs, then performs a time-based holdout. It does not train from the exported file-selection contract. Included run: 1,253 train / 314 test samples, 444 predictors, average precision 0.170 versus test prevalence 0.054; one historical split, not a production result.
+This baseline resolves its feature asset through the original local catalog, joins normalized samples and labels, excludes outcomes and IDs from inputs, then performs a time-based holdout. Included run: 1,253 train / 314 test samples, 444 predictors, average precision 0.170 versus test prevalence 0.054; one historical split, not a production result.
+
+To close the loop from discovery to model, the same baseline can also train from a verified handoff contract:
+
+```bash
+python poc.py train-from-handoff   # builds the SECOM contract, verifies checksums, trains
+```
+
+This uses `examples/secom-ml-handoff.json` semantics (features, target and index assets selected by discovery), calls the same checksum and population checks as `consume_handoff.py`, and writes `outputs/ml_result_from_handoff.json`. It reproduces the SQLite-path numbers exactly (average precision 0.1697), which confirms the contract carries everything the model needs.
 
 ## Rebuild and validate
 
@@ -109,8 +119,10 @@ python build_demo.py      # generates public exports, synthetic files and metada
 python -m unittest discover -s tests -v
 ```
 
-For the existing assets, tests need only Python's standard library. GitHub Actions runs them on push/PR. They check provenance separation, explicit filters, unknown context, linked test cardinality, handoff consumption and invalid selections/paths. [docs/VALIDATION.md](docs/VALIDATION.md) records what was actually exercised.
-# Architecture
+For the existing assets, tests need only Python's standard library. `.github/workflows/ci.yml` runs them on push and pull request (Python 3.10 and 3.12), together with `verify.py`, the handoff-driven training run and a Docker smoke test. They check provenance separation, explicit filters, unknown context, linked test cardinality, handoff consumption, invalid selections/paths, filter ablations and data unpacking.
+
+`verify.py` is a separate integrity check over the real-data pipeline. It asserts the SECOM row counts (1,567 samples, 104 failures), that `is_fail` agrees with the raw label mapping, that the joined ML view keeps one row per sample, that the top discovery hit for a failure-prediction question is `process_features`, and that no target or ID column appears among the predictors. It writes `outputs/verification.json`. It needs the optional dependencies. [docs/VALIDATION.md](docs/VALIDATION.md) records what was actually exercised.
+## Architecture
 
 See [Fab_Context_Architecture.md](docs/Fab_Context_Architecture.md) for the data flow diagram, datasets, Python search logic, API outputs, and how downstream tools verify and load the selected files.
 
@@ -121,13 +133,15 @@ See [Fab_Context_Architecture.md](docs/Fab_Context_Architecture.md) for the data
 | `server.py`, `web/index.html` | Local demo UI and read-only APIs |
 | `discovery.py`, `ontology.json` | Metadata discovery, explanations and relationships |
 | `build_demo.py` | Reproducible file/sidecar generation |
+| `bootstrap.py`, `data.zip` | Unpacks the shipped demo data into `data/` on first run |
+| `verify.py` | Integrity and leakage checks on the real SECOM pipeline |
 | `consume_handoff.py`, `examples/` | Downstream contract consumer and example |
 | `poc.py` | Real-data normalization and ML baseline |
-| `data/raw/`, `data/real/`, `data/synthetic/` | Public original data and clearly separated derived/demo payloads |
-| `data/metadata/`, `data/catalog.json` | Context sidecars and discoverable asset manifest |
+| `data/raw/`, `data/real/`, `data/synthetic/` | Created from `data.zip` or by the build steps; public original data and clearly separated derived/demo payloads |
+| `data/metadata/`, `data/catalog.json` | Created from `data.zip` or by `build_demo.py`; context sidecars and discoverable asset manifest |
 | `outputs/` | Original provenance, discovery and ML receipts |
 | `docs/` | Customer walkthrough, architecture, integration and validation |
-| `tests/`, `.github/workflows/` | Automated checks |
+| `tests/`, `.github/workflows/ci.yml` | Automated checks |
 | `Dockerfile`, `compose.yaml` | Optional container startup |
 
 ## Discussion for a manufacturing pilot
